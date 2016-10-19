@@ -1,4 +1,3 @@
-import csv
 import sys
 import numpy as np
 
@@ -15,6 +14,17 @@ def parse_csv_dataset(fileName):
             dataSet.append(rowAsInt)
     return dataSet
 
+def remove_excess_rules(candidateSet):
+    betterCandidateSet = []
+
+    return betterCandidateSet
+
+def candidates_generation(previousCandidateSet):
+    newCandidates = []
+
+    newCandidates = remove_excess_rules(newCandidates)
+    return newCandidates
+
 dataFileName = sys.argv[1]
 data = parse_csv_dataset(dataFileName)
 
@@ -24,5 +34,8 @@ singletonSet = []
 
 for i in range(numGoods):
     singletonSet.append(i)
+
+commonRules = []
+candidates = candidates_generation(commonRules)
 
 
