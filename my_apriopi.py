@@ -19,8 +19,16 @@ def remove_excess_rules(candidateSet):
 
     return betterCandidateSet
 
-def candidates_generation(previousCandidateSet):
+def candidates_generation(previousCandidateSet, numIteration):
+
     newCandidates = []
+    sizeOfPreviousCandidateSet = len(previousCandidateSet)
+    index = 0
+    for i in range(sizeOfPreviousCandidateSet):
+        for j in range(sizeOfPreviousCandidateSet - i - 1):
+            newCandidates.append(previousCandidateSet[i])
+            newCandidates[index].append(previousCandidateSet[j + i + 1][numIteration - 1])
+            index = index + 1
 
     newCandidates = remove_excess_rules(newCandidates)
     return newCandidates
@@ -33,9 +41,12 @@ numGoods = len(data[0])
 singletonSet = []
 
 for i in range(numGoods):
-    singletonSet.append(i)
+    newArray = []
+    newArray.append(i)
+    singletonSet.append(newArray)
 
 commonRules = []
-candidates = candidates_generation(commonRules)
+for k in range(1):
+    singletonSet = candidates_generation(singletonSet, k + 1)
 
 
