@@ -15,6 +15,7 @@ def parse_csv_dataset(fileName):
     return dataSet
 
 def remove_excess_rules(candidateSet):
+
     betterCandidateSet = []
 
     return betterCandidateSet
@@ -25,28 +26,32 @@ def candidates_generation(previousCandidateSet, numIteration):
     sizeOfPreviousCandidateSet = len(previousCandidateSet)
     index = 0
     for i in range(sizeOfPreviousCandidateSet):
-        for j in range(sizeOfPreviousCandidateSet - i - 1):
+        for j in range(i, sizeOfPreviousCandidateSet - 1):
             newCandidates.append(previousCandidateSet[i])
-            newCandidates[index].append(previousCandidateSet[j + i + 1][numIteration - 1])
+            newCandidates[index].append(previousCandidateSet[j][numIteration - 1])
             index = index + 1
 
     newCandidates = remove_excess_rules(newCandidates)
     return newCandidates
+
+def get_proper_set(commonRules):
+
+    properSet = []
+    return properSet
 
 dataFileName = sys.argv[1]
 data = parse_csv_dataset(dataFileName)
 
 numTransactions = len(data)
 numGoods = len(data[0])
-singletonSet = []
-
+candidateSet = []
 for i in range(numGoods):
-    newArray = []
-    newArray.append(i)
-    singletonSet.append(newArray)
+    singletonSet = []
+    singletonSet.append(i)
+    candidateSet.append(singletonSet)
 
 commonRules = []
 for k in range(1):
-    singletonSet = candidates_generation(singletonSet, k + 1)
-
+    commonRules = candidates_generation(candidateSet, k + 1)
+    candidateSet = get_proper_set(commonRules)
 
