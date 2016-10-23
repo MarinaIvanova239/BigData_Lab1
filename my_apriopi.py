@@ -21,20 +21,23 @@ def parse_csv_dataset(fileName):
 def count_good_support(good, transactions, numberOfTransactions):
 
     transactionsWithGood = 0
-    for each_transaction in (transactions):
-        if each_transaction[good] > 0:
+    for eachTransaction in transactions:
+        if eachTransaction[good] > 0:
             transactionsWithGood = transactionsWithGood + 1
 
-    goodSupport = transactionsWithGood / numberOfTransactions
+    goodSupport = transactionsWithGood / float(numberOfTransactions)
     return goodSupport
 
 def remove_excess_rules(candidateSet, previousCommonGoodsSet):
 
     betterCandidateSet = []
-    numberOfCandidates = len(candidateSet)
     lengthOfCandidates = len(candidateSet[0])
 
-    for i in range(numberOfCandidates):
+    previousCommonGoodsArraySet = []
+    for eachSet in previousCommonGoodsSet:
+        previousCommonGoodsArraySet.append(list(eachSet))
+
+    for eachCandidate in candidateSet:
         counter = 0
         for j in range(lengthOfCandidates):
             if j == 0:
@@ -44,43 +47,68 @@ def remove_excess_rules(candidateSet, previousCommonGoodsSet):
                 shift = j - 1
                 border = lengthOfCandidates
 
-            subSet = [elem for elem in candidateSet if candidateSet.index(elem) in range(j, border)
-                      or candidateSet.index(elem) in range(0, shift)]
-            if subSet in previousCommonGoodsSet:
-                counter = counter + 1
+            subSet = [elem for elem in eachCandidate if eachCandidate.index(elem) in range(j, border)
+                      or eachCandidate.index(elem) in range(0, shift)]
+            if subSet in previousCommonGoodsArraySet:
+                counter += 1
 
         if counter == lengthOfCandidates:
-            betterCandidateSet.append(candidateSet[i])
+            betterCandidateSet.append(eachCandidate)
 
     return betterCandidateSet
 
 def candidates_generation(previousCommonGoods, numberOfGoods):
 
     newCandidates = []
-    sizeOfPreviousCandidateSet = len(previousCommonGoods)
+    sizeOfSet = len(previousCommonGoods[0])
     index = 0
-    for i in range(sizeOfPreviousCandidateSet):
-        for j in range(i + 1, numberOfGoods):
-            newCandidates.append(list(previousCommonGoods[i]))
+    for commonGood in previousCommonGoods:
+        lastElement = commonGood[sizeOfSet - 1]
+        for j in range(lastElement + 1, numberOfGoods):
+            newCandidates.append(list(commonGood))
             newCandidates[index].append(j)
-            index = index + 1
+            index += 1
 
     newCandidates = remove_excess_rules(newCandidates, previousCommonGoods)
     return newCandidates
 
+def is_subset(candidate, transaction):
+
+    counter = 0
+    candidateLength = len(candidate)
+    for eachElement in candidate:
+        if transaction[eachElement] > 0:
+            counter += 1
+
+    if counter == candidateLength:
+        return True
+
+    return False
+
 def count_candidates_support(candidateSet, transactions, numberOfTransactions):
 
     candidatesWithSupport = dict()
-    # for eachTransaction in range(transactions):
-    # support = counter / numberOfTransactions
-    # candidatesWithSupport[tuple(candidateSet[i])] = support
+    for eachCandidate in candidateSet:
+        candidatesWithSupport[tuple(eachCandidate)] = 0
+
+    for eachTransaction in transactions:
+        for eachCandidate in candidateSet:
+            if is_subset(eachCandidate, eachTransaction):
+                candidatesWithSupport[tuple(eachCandidate)] += 1
+
+    for eachCandidate in candidateSet:
+        candidatesWithSupport[tuple(eachCandidate)] /= float(numberOfTransactions)
 
     return candidatesWithSupport
 
-def get_proper_set(commonRules):
+def get_proper_set(commonRules, minSupport):
 
-    properSet = []
-    return properSet
+    commonRulesItems = commonRules.items()
+    for key, value in commonRulesItems:
+        if value < minSupport:
+            del commonRules[key]
+
+    return None
 
 if __name__ == "__main__":
 
@@ -100,10 +128,11 @@ if __name__ == "__main__":
     arrayOfCommonSets.append(commonGoodsSet)
 
     candidateSet = []
-    for k in range(1):
-    #while commonGoodsSet:
+    while commonGoodsSet:
         candidateSet = candidates_generation(commonGoodsSet.keys(), numGoods)
         commonGoodsSet = count_candidates_support(candidateSet, data, numTransactions)
-        commonGoodsSet = get_proper_set(commonGoodsSet)
+        get_proper_set(commonGoodsSet, minSupport)
         arrayOfCommonSets.append(commonGoodsSet)
 
+    numIterations = len(arrayOfCommonSets)
+    print numIterations
