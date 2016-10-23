@@ -28,6 +28,25 @@ def count_good_support(good, transactions, numberOfTransactions):
     goodSupport = transactionsWithGood / float(numberOfTransactions)
     return goodSupport
 
+def get_subsets(set):
+
+    arrayOfSubsets = []
+    lengthOfSet = len(set)
+    for j in range(lengthOfSet):
+        if j == 0:
+            shift = 0
+            border = lengthOfSet - 1
+        else:
+            shift = j - 1
+            border = lengthOfSet
+
+        subset = [elem for elem in set if set.index(elem) in range(j, border)
+                  or set.index(elem) in range(0, shift)]
+        arrayOfSubsets.append(subset)
+
+    return arrayOfSubsets
+
+
 def remove_excess_rules(candidateSet, previousCommonGoodsSet):
 
     betterCandidateSet = []
@@ -39,17 +58,9 @@ def remove_excess_rules(candidateSet, previousCommonGoodsSet):
 
     for eachCandidate in candidateSet:
         counter = 0
-        for j in range(lengthOfCandidates):
-            if j == 0:
-                shift = 0
-                border = lengthOfCandidates - 1
-            else:
-                shift = j - 1
-                border = lengthOfCandidates
-
-            subSet = [elem for elem in eachCandidate if eachCandidate.index(elem) in range(j, border)
-                      or eachCandidate.index(elem) in range(0, shift)]
-            if subSet in previousCommonGoodsArraySet:
+        listOfSubsets = get_subsets(eachCandidate)
+        for subset in listOfSubsets:
+            if subset in previousCommonGoodsArraySet:
                 counter += 1
 
         if counter == lengthOfCandidates:
@@ -108,12 +119,48 @@ def get_proper_set(commonRules, minSupport):
         if value < minSupport:
             del commonRules[key]
 
-    return None
+    return
+
+def find_subset_support(subset, subsetSize, commonSets):
+
+    commonSetsWithProperSize = commonSets[subsetSize - 1]
+    support = commonSetsWithProperSize[tuple(subset)]
+
+    return support
+
+def find_rest_part(subset, wholeSet):
+
+    restPart = []
+    for eachElement in wholeSet:
+        if eachElement not in subset:
+            restPart.append(eachElement)
+
+    return restPart
+
+def get_common_rules(commonRules, commonSets, oneSet, support,  minConf, wholeSet):
+
+    allSubsets = get_subsets(oneSet)
+    sizeOfSubset = len(allSubsets[0])
+    for eachSubset in allSubsets:
+        subsetSupport = find_subset_support(eachSubset, sizeOfSubset, commonSets)
+        restPart = find_rest_part(eachSubset, wholeSet)
+        conf = support / float(subsetSupport)
+        if sizeOfSubset == 1:
+            if conf >= minConf:
+                commonRules[(tuple(eachSubset), tuple(restPart))] = conf
+            return True
+
+        get_common_rules(commonRules, commonSets, eachSubset, support, minConf, wholeSet)
+        if conf >= minConf:
+            commonRules[(tuple(eachSubset), tuple(restPart))] = conf
+
+    return True
 
 if __name__ == "__main__":
 
     dataFileName = sys.argv[1]
     minSupport = float(sys.argv[2])
+    minConf = float(sys.argv[3])
 
     data = parse_csv_dataset(dataFileName)
     numTransactions = len(data)
@@ -125,14 +172,21 @@ if __name__ == "__main__":
         support = count_good_support(i, data, numTransactions)
         commonGoodsSet[tuple([i])] = support
 
-    arrayOfCommonSets.append(commonGoodsSet)
-
     candidateSet = []
     while commonGoodsSet:
+        arrayOfCommonSets.append(commonGoodsSet)
         candidateSet = candidates_generation(commonGoodsSet.keys(), numGoods)
         commonGoodsSet = count_candidates_support(candidateSet, data, numTransactions)
         get_proper_set(commonGoodsSet, minSupport)
-        arrayOfCommonSets.append(commonGoodsSet)
 
-    numIterations = len(arrayOfCommonSets)
-    print numIterations
+    commonRules = dict()
+    numCommonSets = len(arrayOfCommonSets)
+    for i in range(1, numCommonSets):
+        commonSetItems = arrayOfCommonSets[i].items()
+        for key, value in commonSetItems:
+            get_common_rules(commonRules, arrayOfCommonSets, list(key), value, minConf, list(key))
+
+    for eachRule, conf in commonRules.items():
+        print eachRule, ':', conf
+
+
