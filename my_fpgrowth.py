@@ -52,7 +52,7 @@ def build_fp_tree(tree, sortTransactions):
 
 def find_paths(good, treeElement, path, pathSupport, pathArray):
 
-    if treeElement.name == good[0] and path != []:
+    if treeElement.name == good and path != []:
         pathArray[(tuple(path), tuple(pathSupport))] = treeElement.index
         return True
 
@@ -67,11 +67,26 @@ def find_paths(good, treeElement, path, pathSupport, pathArray):
 
     return True
 
+def find_shortest_path(good, numberOfGoods):
+
+    if not good.children:
+        return ([good.name], 1)
+    minLength = numberOfGoods
+    minPath = []
+    for child in good.children:
+        (path, length) = find_shortest_path(child, numberOfGoods)
+        path.append(child.name)
+        length += 1
+        if length < minLength:
+            minLength = length
+            minPath = path
+
+    return (minPath, minLength)
+
 if __name__ == "__main__":
 
     dataFileName = sys.argv[1]
     minSupport = float(sys.argv[2])
-    minConf = float(sys.argv[3])
 
     data = common.parse_csv_dataset(dataFileName)
     numTransactions = len(data)
@@ -90,9 +105,11 @@ if __name__ == "__main__":
     fpTree = Tree()
     build_fp_tree(fpTree, sortData)
 
+    arrayOfCommonSets = dict()
     for eachElement, support in commonGoodsSet.items():
         pathArray = dict()
-        find_paths(list(eachElement), fpTree.root, [], [], pathArray)
+        element = list(eachElement)[0]
+        find_paths(element, fpTree.root, [], [], pathArray)
         newCommonGoodsArray = dict()
         for eachGood in commonGoodsSet.keys():
             good = list(eachGood)[0]
@@ -103,9 +120,9 @@ if __name__ == "__main__":
                     placeOfGood = pathList.index(good)
                     supportOfGood = supportList[placeOfGood]
                     if tuple([good]) in newCommonGoodsArray:
-                        newCommonGoodsArray[tuple([good])] += supportOfGood
+                        newCommonGoodsArray[tuple([good])] += supportOfGood / float(numTransactions)
                     else:
-                        newCommonGoodsArray[tuple([good])] = supportOfGood
+                        newCommonGoodsArray[tuple([good])] = supportOfGood / float(numTransactions)
 
         sortNewCommonGoodsArray = sorted(newCommonGoodsArray.items(), key=operator.itemgetter(1), reverse=True)
 
@@ -125,7 +142,25 @@ if __name__ == "__main__":
         nominalFpTree = Tree()
         build_fp_tree(nominalFpTree, sortNewData)
 
+        for good, support in sortNewCommonGoodsArray:
+            if support < minSupport:
+                continue
 
+            goodElement = list(good)[0]
+            flag = False
+            for child in nominalFpTree.root.children:
+                if child.name == goodElement:
+                    flag = True
+                    (path, length) = find_shortest_path(child, numGoods)
+                    path.append(element)
+                    arrayOfCommonSets[tuple(path)] = support
+                    break
+
+            if not flag:
+                arrayOfCommonSets[goodElement, element] = support
+
+    for eachSet, support in arrayOfCommonSets.items():
+        print eachSet, ':', support
 
 
 
