@@ -1,6 +1,7 @@
 import sys
 import operator
 import common
+import time
 
 def sort_transactions(transactions, sortCommonGoodsSet):
 
@@ -85,6 +86,8 @@ def find_shortest_path(good, numberOfGoods):
 
 if __name__ == "__main__":
 
+    startTime = time.time()
+
     dataFileName = sys.argv[1]
     minSupport = float(sys.argv[2])
 
@@ -159,18 +162,10 @@ if __name__ == "__main__":
             if not flag:
                 arrayOfCommonSets[goodElement, element] = support
 
+    endTime = time.time()
+
     for eachSet, support in arrayOfCommonSets.items():
         print eachSet, ':', support
 
-
-
-
-
-
-
-
-
-
-
-
-
+    print '.......'
+    print 'time=', endTime - startTime

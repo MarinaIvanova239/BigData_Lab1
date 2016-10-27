@@ -1,5 +1,6 @@
 import sys
 import common
+import time
 
 def get_subsets(set):
 
@@ -131,6 +132,8 @@ def get_common_rules(commonRules, commonSets, oneSet, support,  minConf, wholeSe
 
 if __name__ == "__main__":
 
+    startTime = time.time()
+
     dataFileName = sys.argv[1]
     minSupport = float(sys.argv[2])
     minConf = float(sys.argv[3])
@@ -159,7 +162,12 @@ if __name__ == "__main__":
         for key, value in commonSetItems:
             get_common_rules(commonRules, arrayOfCommonSets, list(key), value, minConf, list(key))
 
+    endTime = time.time()
+
     for eachRule, conf in commonRules.items():
         print eachRule, ':', conf
+
+    print '.......'
+    print 'time=', endTime - startTime
 
 
