@@ -90,6 +90,7 @@ if __name__ == "__main__":
 
     dataFileName = sys.argv[1]
     minSupport = float(sys.argv[2])
+    minConf = float(sys.argv[3])
 
     data = common.parse_csv_dataset(dataFileName)
     numTransactions = len(data)
