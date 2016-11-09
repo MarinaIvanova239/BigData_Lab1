@@ -64,11 +64,6 @@ if __name__ == "__main__":
         commonGoodsSet = candidates_func.count_candidates_support(candidateSet, data, numTransactions)
         candidates_func.get_proper_set(commonGoodsSet, minSupport)
 
-    print 'items:'
-    for commonSet in arrayOfCommonSets:
-        for element, support in commonSet.items():
-            print element, ':', support
-
     commonRules = dict()
     numCommonSets = len(arrayOfCommonSets)
     for i in range(1, numCommonSets):
@@ -77,6 +72,11 @@ if __name__ == "__main__":
             get_common_rules(commonRules, arrayOfCommonSets, list(key), value, minConf, list(key))
 
     endTime = time.time()
+
+    print 'items:'
+    for commonSet in arrayOfCommonSets:
+        for element, support in commonSet.items():
+            print element, ':', support
 
     print '.......'
     print 'rules:'
