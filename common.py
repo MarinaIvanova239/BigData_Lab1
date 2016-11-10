@@ -42,3 +42,38 @@ def get_subsets(set):
         arrayOfSubsets.append(subset)
 
     return arrayOfSubsets
+
+def find_subset_support(subset, subsetSize, commonSets):
+
+    commonSetsWithProperSize = commonSets[subsetSize - 1]
+    support = commonSetsWithProperSize[tuple(subset)]
+
+    return support
+
+def find_rest_part(subset, wholeSet):
+
+    restPart = []
+    for eachElement in wholeSet:
+        if eachElement not in subset:
+            restPart.append(eachElement)
+
+    return restPart
+
+def get_common_rules(commonRules, commonSets, oneSet, support,  minConf, wholeSet):
+
+    allSubsets = get_subsets(oneSet)
+    sizeOfSubset = len(allSubsets[0])
+    for eachSubset in allSubsets:
+        subsetSupport = find_subset_support(eachSubset, sizeOfSubset, commonSets)
+        restPart = find_rest_part(eachSubset, wholeSet)
+        conf = support / float(subsetSupport)
+        if sizeOfSubset == 1:
+            if conf >= minConf:
+                commonRules[(tuple(eachSubset), tuple(restPart))] = conf
+            return True
+
+        get_common_rules(commonRules, commonSets, eachSubset, support, minConf, wholeSet)
+        if conf >= minConf:
+            commonRules[(tuple(eachSubset), tuple(restPart))] = conf
+
+    return True
