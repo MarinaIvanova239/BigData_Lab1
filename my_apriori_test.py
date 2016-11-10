@@ -17,11 +17,5 @@ class AprioriTests(unittest.TestCase):
   def test_checking_if_set_is_subset_works_corerectly(self):
       return
 
-  def test_all_subsets_of_set_are_founded(self):
-      return
-
-  def test_common_rules_are_counted_correctly(self):
-      return
-
 if __name__ == '__main__':
     unittest.main()
