@@ -3,6 +3,16 @@ import common
 import time
 import candidates_func
 
+def run_apriori(commonGoodsSet, numGoods, data, numTransactions, minSupport):
+    arrayOfCommonSets = []
+    while commonGoodsSet:
+        arrayOfCommonSets.append(commonGoodsSet)
+        candidateSet = candidates_func.candidates_generation(commonGoodsSet.keys(), numGoods)
+        commonGoodsSet = candidates_func.count_candidates_support(candidateSet, data, numTransactions)
+        candidates_func.get_proper_set(commonGoodsSet, minSupport)
+
+    return arrayOfCommonSets
+
 if __name__ == "__main__":
 
     startTime = time.time()
@@ -26,20 +36,14 @@ if __name__ == "__main__":
         numGoods = len(data[0])
 
     # count support of each good
-    arrayOfCommonSets = []
     commonGoodsSet = dict()
+    common.count_good_support(data, numTransactions, commonGoodsSet, numGoods)
     for i in range(numGoods):
-        support = common.count_good_support(i, data, numTransactions)
-        if support >= minSupport:
-            commonGoodsSet[tuple([i])] = support
+        if commonGoodsSet[tuple([i])] < minSupport:
+            del commonGoodsSet[tuple([i])]
 
     # run apriori - find all sets of common goods (which have support more than minSupport)
-    candidateSet = []
-    while commonGoodsSet:
-        arrayOfCommonSets.append(commonGoodsSet)
-        candidateSet = candidates_func.candidates_generation(commonGoodsSet.keys(), numGoods)
-        commonGoodsSet = candidates_func.count_candidates_support(candidateSet, data, numTransactions)
-        candidates_func.get_proper_set(commonGoodsSet, minSupport)
+    arrayOfCommonSets = run_apriori(commonGoodsSet, numGoods, data, numTransactions, minSupport)
 
     # find common rules from common sets (confidence more than minConf)
     commonRules = dict()

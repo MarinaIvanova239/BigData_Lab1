@@ -18,21 +18,21 @@ def get_dataset_from_csv_file(fileName):
 
     return dataSet
 
-def count_good_support(good, transactions, numberOfTransactions):
+def count_good_support(transactions, numberOfTransactions, goodSupport, numGoods):
 
-    # if good not in transaction list, return 0
-    transactionsWithGood = 0
-    if (len(transactions[0]) < good):
-        return 0
+    for i in range(numGoods):
+        goodSupport[tuple([i])] = 0
 
     # count number of transactions which contain good
     for transaction in transactions:
-        if transaction[good] > 0:
-            transactionsWithGood = transactionsWithGood + 1
+        transactionLength = len(transaction)
+        for i in range(transactionLength):
+            if transaction[i] > 0:
+                goodSupport[tuple([i])] += 1
 
     # count good support
-    goodSupport = transactionsWithGood / float(numberOfTransactions)
-    return goodSupport
+    for i in range(len(goodSupport)):
+        goodSupport[tuple([i])] /= float(numberOfTransactions)
 
 def get_subsets(set):
 

@@ -10,6 +10,14 @@ from common import (
     get_common_rules
 )
 
+from my_apriopi import (
+    run_apriori
+)
+
+from my_fpgrowth import (
+    run_fpgrowth
+)
+
 class CommonTests(unittest.TestCase):
 
     def test_csv_file_is_parsed_correctly(self):
@@ -39,13 +47,17 @@ class CommonTests(unittest.TestCase):
         set.append([[]])
         set.append([[1, 1, 1, 1]])
         set.append([[1, 1, 1, 1], [1, 0, 0, 1], [0, 0, 0, 0], [0, 0, 1, 1]])
-        expectedSupport = [0, 1, 0.5]
+        expectedSupport = [[0, 0, 0, 0], [1, 1, 1, 1], [0.5, 0.25, 0.5, 0.75]]
 
         numSets = len(set)
-        good = 2
-        for i in range(numSets):
-            support = count_good_support(good, set[i], len(set[i]))
-            self.assertEquals(support, expectedSupport[i])
+        numGoods = 4
+        commonGoodsSet = dict()
+        for j in range(numSets):
+            for i in range(numGoods):
+                commonGoodsSet[tuple([i])] = 0
+            count_good_support(set[j], len(set[j]), commonGoodsSet, numGoods)
+            for i in range(numGoods):
+                self.assertEquals(commonGoodsSet[tuple([i])], expectedSupport[j][i])
 
     def test_all_subsets_of_set_are_founded(self):
         set = []
@@ -132,6 +144,21 @@ class CommonTests(unittest.TestCase):
                 get_common_rules(commonRules, commonSets, list(key), value, minConf, list(key))
 
         self.assertEquals(commonRules, expectedCommonRules)
+
+    def test_apriori_and_fpgrowth_give_same_results(self):
+        minSupport = 0.68
+        transactions = [[1, 1, 1, 0, 1, 0, 0], [0, 1, 0, 0, 0, 0, 1], [0, 1, 0, 0, 0, 0, 1],
+                        [1, 1, 0, 1, 0, 1, 1], [1, 0, 0, 0, 1, 0, 0], [1, 0, 1, 0, 1, 0, 0]]
+        numGoods = 7
+        goods = dict()
+        count_good_support(transactions, len(transactions), goods, numGoods)
+        for i in range(numGoods):
+            if goods[tuple([i])] < minSupport:
+                del goods[tuple([i])]
+
+        resultOfApriori = run_apriori(goods, numGoods, transactions, len(transactions), minSupport)
+        resultOfFpGrowth = run_fpgrowth(goods, transactions, numGoods, len(transactions), minSupport)
+        self.assertEquals(resultOfApriori, resultOfFpGrowth)
 
 
 if __name__ == '__main__':

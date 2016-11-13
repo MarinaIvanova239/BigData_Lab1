@@ -8,6 +8,14 @@ from candidates_func import (
     get_proper_set
 )
 
+from common import (
+    count_good_support
+)
+
+from my_apriopi import (
+    run_apriori
+)
+
 class AprioriTests(unittest.TestCase):
 
   def test_candidates_support_is_counted_correctly(self):
@@ -92,6 +100,33 @@ class AprioriTests(unittest.TestCase):
           result = is_subset(subset[i], set)
           self.assertEquals(result, expectedResult[i])
       return
+
+  def test_all_common_sets_are_founded(self):
+      minSupport = 0.5
+      transactions = [[0, 1, 1, 1, 1, 0, 0], [0, 1, 0, 1, 1, 0, 1], [1, 1, 0, 0, 1, 0, 0],
+                      [0, 0, 0, 1, 0, 1, 1], [0, 0, 0, 0, 1, 0, 0]]
+      numGoods = 7
+      goods = dict()
+      count_good_support(transactions, len(transactions), goods, numGoods)
+      for i in range(numGoods):
+          if goods[tuple([i])] < minSupport:
+              del goods[tuple([i])]
+
+      result = run_apriori(goods, numGoods, transactions, len(transactions), minSupport)
+
+      commonSetsOneElem = dict()
+      commonSetsOneElem[tuple([1])] = 0.6
+      commonSetsOneElem[tuple([3])] = 0.6
+      commonSetsOneElem[tuple([4])] = 0.8
+
+      commonSetsTwoElem = dict()
+      commonSetsTwoElem[tuple([1, 4])] = 0.6
+
+      expectedResult = []
+      expectedResult.append(commonSetsOneElem)
+      expectedResult.append(commonSetsTwoElem)
+
+      self.assertEquals(result, expectedResult)
 
 if __name__ == '__main__':
     unittest.main()
