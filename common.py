@@ -1,6 +1,6 @@
 import numpy as np
 
-def parse_csv_dataset(fileName):
+def get_dataset_from_csv_file(fileName):
 
     dataSet = []
     with open(fileName, 'rb') as csvfile:
@@ -18,6 +18,9 @@ def parse_csv_dataset(fileName):
 def count_good_support(good, transactions, numberOfTransactions):
 
     transactionsWithGood = 0
+    if (len(transactions[0]) < good):
+        return 0
+
     for transaction in transactions:
         if transaction[good] > 0:
             transactionsWithGood = transactionsWithGood + 1
@@ -37,8 +40,12 @@ def get_subsets(set):
             shift = j - 1
             border = lengthOfSet
 
-        subset = [elem for elem in set if set.index(elem) in range(j, border)
-                  or set.index(elem) in range(0, shift)]
+        subset = []
+        for i in range(0, shift):
+            subset.append(set[i])
+        for i in range(j, border):
+            subset.append(set[i])
+
         arrayOfSubsets.append(subset)
 
     return arrayOfSubsets

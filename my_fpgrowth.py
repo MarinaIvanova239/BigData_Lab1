@@ -128,9 +128,18 @@ if __name__ == "__main__":
     minSupport = float(sys.argv[2])
     minConf = float(sys.argv[3])
 
-    data = common.parse_csv_dataset(dataFileName)
+    if minSupport > 1 or minSupport < 0:
+        print 'MinSupport must be in [0, 1]'
+        quit()
+    if minConf > 1 or minConf < 0:
+        print 'MinConf must be in [0, 1]'
+        quit()
+
+    data = common.get_dataset_from_csv_file(dataFileName)
     numTransactions = len(data)
-    numGoods = len(data[0])
+    numGoods = 0
+    if data:
+        numGoods = len(data[0])
 
     commonGoodsSet = dict()
     for i in range(numGoods):

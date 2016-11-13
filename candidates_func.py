@@ -1,6 +1,6 @@
 import common
 
-def remove_excess_rules(candidateSet, previousCommonGoodsSet):
+def remove_excess_sets(candidateSet, previousCommonGoodsSet):
 
     betterCandidateSet = []
     lengthOfCandidates = len(candidateSet[0])
@@ -24,6 +24,8 @@ def remove_excess_rules(candidateSet, previousCommonGoodsSet):
 def candidates_generation(previousCommonGoods, numberOfGoods):
 
     newCandidates = []
+    if not previousCommonGoods:
+        return []
     sizeOfGoodSet = len(previousCommonGoods[0])
     index = 0
     for good in previousCommonGoods:
@@ -33,14 +35,17 @@ def candidates_generation(previousCommonGoods, numberOfGoods):
             newCandidates[index].append(j)
             index += 1
 
-    newCandidates = remove_excess_rules(newCandidates, previousCommonGoods)
+    newCandidates = remove_excess_sets(newCandidates, previousCommonGoods)
     return newCandidates
 
 def is_subset(candidate, transaction):
 
     counter = 0
     candidateLength = len(candidate)
+    transactionLength = len(transaction)
     for element in candidate:
+        if element > transactionLength:
+            return False
         if transaction[element] > 0:
             counter += 1
 
