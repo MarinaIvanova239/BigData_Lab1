@@ -18,12 +18,14 @@ if __name__ == "__main__":
         print 'MinConf must be in [0, 1]'
         quit()
 
+    # read transactions from csv file
     data = common.get_dataset_from_csv_file(dataFileName)
     numTransactions = len(data)
     numGoods = 0
     if data:
         numGoods = len(data[0])
 
+    # count support of each good
     arrayOfCommonSets = []
     commonGoodsSet = dict()
     for i in range(numGoods):
@@ -31,6 +33,7 @@ if __name__ == "__main__":
         if support >= minSupport:
             commonGoodsSet[tuple([i])] = support
 
+    # run apriori - find all sets of common goods (which have support more than minSupport)
     candidateSet = []
     while commonGoodsSet:
         arrayOfCommonSets.append(commonGoodsSet)
@@ -38,6 +41,7 @@ if __name__ == "__main__":
         commonGoodsSet = candidates_func.count_candidates_support(candidateSet, data, numTransactions)
         candidates_func.get_proper_set(commonGoodsSet, minSupport)
 
+    # find common rules from common sets (confidence more than minConf)
     commonRules = dict()
     numCommonSets = len(arrayOfCommonSets)
     for i in range(1, numCommonSets):
@@ -47,6 +51,7 @@ if __name__ == "__main__":
 
     endTime = time.time()
 
+    # print results
     print 'items:'
     for commonSet in arrayOfCommonSets:
         for element, support in commonSet.items():

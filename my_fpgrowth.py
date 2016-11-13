@@ -9,9 +9,10 @@ def sort_transactions(transactions, sortCommonGoodsSet):
     sizeOfSortCommonGoodsSet = len(sortCommonGoodsSet)
     for transaction in transactions:
         sortTransaction = []
+        lenTransaction = len(transaction)
         for i in range(sizeOfSortCommonGoodsSet):
             good = list(sortCommonGoodsSet[i][0])[0]
-            if transaction[good] > 0:
+            if lenTransaction >= good and transaction[good] > 0:
                 sortTransaction.append(good)
 
         sortTransactionSet.append(sortTransaction)
@@ -19,21 +20,20 @@ def sort_transactions(transactions, sortCommonGoodsSet):
     return sortTransactionSet
 
 class node:
-    def __init__(self, name=0, parent=None):
-        self.index = 0
+    def __init__(self, name=0, parent=None, index=0):
+        self.index = index
         self.name = name
-        self.children = []
         self.parent = parent
+        self.children = []
 
 class Tree:
-    def __init__(self, transactions=0, goods=0):
+    def __init__(self, goods=0):
         self.root = node(-1)
-        self.transactions = transactions
         self.goodSupport = dict()
         self.goods = goods
         self.arrayOfGoodNodes = []
 
-        for i in range(numGoods):
+        for i in range(goods):
             self.arrayOfGoodNodes.append([])
             self.goodSupport[tuple([i])] = 0
 
@@ -42,21 +42,16 @@ class Tree:
         parent.children.append(temp)
         return temp
 
-def build_fp_tree(tree, sortTransactions, numTransactions, startSupport):
+def build_fp_tree(tree, sortTransactions, numTransactions):
 
-    counter = 0
     for transaction in sortTransactions:
         treeElement = tree.root
         for good in transaction:
             flag = False
             for child in treeElement.children:
                 if good == child.name:
-                    if startSupport:
-                        tree.goodSupport[tuple([good])] += startSupport[counter]
-                        child.index += startSupport[counter]
-                    else:
-                        tree.goodSupport[tuple([good])] += 1 / float(numTransactions)
-                        child.index += 1 / float(numTransactions)
+                    tree.goodSupport[tuple([good])] += 1 / float(numTransactions)
+                    child.index += 1 / float(numTransactions)
                     treeElement = child
                     flag = True
                     break
@@ -65,32 +60,20 @@ def build_fp_tree(tree, sortTransactions, numTransactions, startSupport):
                 newNode = tree.insert(treeElement, good)
                 tree.arrayOfGoodNodes[good].append(newNode)
                 treeElement = newNode
-                if startSupport:
-                    tree.goodSupport[tuple([good])] += startSupport[counter]
-                    treeElement.index += startSupport[counter]
-                else:
-                    tree.goodSupport[tuple([good])] += 1 / float(numTransactions)
-                    treeElement.index += 1 / float(numTransactions)
-
-        counter += 1
+                tree.goodSupport[tuple([good])] += 1 / float(numTransactions)
+                treeElement.index += 1 / float(numTransactions)
 
     return
 
-def find_paths(good, treeElement, path, paths, pathsSupport):
+def build_nominal_tree(tree, good):
+    nominalTree = Tree(tree.goods)
+    for node in tree.arrayOfGoodNodes[good]:
+        treeElement = node
+        while treeElement.parent.name != -1:
 
-    if treeElement.name == good and path != []:
-        paths.append(path)
-        pathsSupport.append(treeElement.index)
-        return True
+            treeElement = treeElement.parent
 
-    if treeElement.name != -1:
-        path.append(treeElement.name)
-
-    originalPath = tuple(path)
-    for child in treeElement.children:
-        find_paths(good, child, list(originalPath), paths, pathsSupport)
-
-    return True
+    return nominalTree
 
 def find_common_sets(tree, set, commonSets, sizeOfCommonSet, commonGoods, numCurrentGood, minSupport):
 
@@ -111,11 +94,8 @@ def find_common_sets(tree, set, commonSets, sizeOfCommonSet, commonGoods, numCur
             if (sizeOfSet == sizeOfCommonSet):
                 commonSets.append(dict())
             commonSets[sizeOfCommonSet][tuple(newSet)] = support
-            paths = []
-            pathsSupport = []
-            find_paths(currentGood, tree.root, [], paths, pathsSupport)
-            nominalTree = Tree(tree.transactions, tree.goods)
-            build_fp_tree(nominalTree, paths, tree.transactions, pathsSupport)
+
+            nominalTree = build_nominal_tree(tree, currentGood)
             find_common_sets(nominalTree, newSet, commonSets, sizeOfCommonSet + 1, commonGoods, numCurrentGood, minSupport)
 
     return True
@@ -151,8 +131,8 @@ if __name__ == "__main__":
     sortData = sort_transactions(data, sortCommonGoodsSet)
     sizeSortCommonGoodsSet = len(sortCommonGoodsSet)
 
-    fpTree = Tree(numTransactions, numGoods)
-    build_fp_tree(fpTree, sortData, numTransactions, [])
+    fpTree = Tree(numGoods)
+    build_fp_tree(fpTree, sortData, numTransactions)
 
     arrayOfCommonSets = []
     find_common_sets(fpTree, [], arrayOfCommonSets, 0, sortCommonGoodsSet, sizeSortCommonGoodsSet - 1, minSupport)

@@ -88,9 +88,51 @@ class CommonTests(unittest.TestCase):
             self.assertEquals(restPart, expectedRestPart[i])
 
     def test_common_rules_are_counted_correctly(self):
-        #get_common_rules
-        #(commonRules, arrayOfCommonSets, list(key), value, minConf, list(key))
-        return
+        commonSetsOneElem = dict()
+        commonSetsOneElem[tuple([0])] = 0.96
+        commonSetsOneElem[tuple([1])] = 0.75
+        commonSetsOneElem[tuple([2])] = 0.69
+
+        commonSetsTwoElem = dict()
+        commonSetsTwoElem[tuple([0, 2])] = 0.43
+        commonSetsTwoElem[tuple([1, 2])] = 0.5
+        commonSetsTwoElem[tuple([0, 1])] = 0.46
+
+        commonSetsThreeElem = dict()
+        commonSetsThreeElem[tuple([0, 1, 2])] = 0.22
+
+        commonSets = []
+        commonSets.append(commonSetsOneElem)
+        commonSets.append(commonSetsTwoElem)
+
+        expectedCommonRules = dict()
+        expectedCommonRules[(tuple([2]), tuple([0]))] = commonSetsTwoElem[tuple([0, 2])] / commonSetsOneElem[tuple([2])]
+        expectedCommonRules[(tuple([1]), tuple([2]))] = commonSetsTwoElem[tuple([1, 2])] / commonSetsOneElem[tuple([1])]
+        expectedCommonRules[(tuple([2]), tuple([1]))] = commonSetsTwoElem[tuple([1, 2])] / commonSetsOneElem[tuple([2])]
+        expectedCommonRules[(tuple([1]), tuple([0]))] = commonSetsTwoElem[tuple([0, 1])] / commonSetsOneElem[tuple([1])]
+
+        minConf = 0.5
+        commonRules = dict()
+        numCommonSets = len(commonSets)
+        for i in range(1, numCommonSets):
+            commonSetItems = commonSets[i].items()
+            for key, value in commonSetItems:
+                get_common_rules(commonRules, commonSets, list(key), value, minConf, list(key))
+
+        self.assertEquals(commonRules, expectedCommonRules)
+
+        commonSets.append(commonSetsThreeElem)
+        expectedCommonRules[(tuple([0, 2]), tuple([1]))] = commonSetsThreeElem[tuple([0, 1, 2])] / commonSetsTwoElem[tuple([0, 2])]
+
+        commonRules = dict()
+        numCommonSets = len(commonSets)
+        for i in range(1, numCommonSets):
+            commonSetItems = commonSets[i].items()
+            for key, value in commonSetItems:
+                get_common_rules(commonRules, commonSets, list(key), value, minConf, list(key))
+
+        self.assertEquals(commonRules, expectedCommonRules)
+
 
 if __name__ == '__main__':
     unittest.main()
